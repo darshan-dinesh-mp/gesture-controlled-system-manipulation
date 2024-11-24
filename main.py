@@ -57,26 +57,22 @@ while True:
 
             # Left Hand for System Control
             elif hand_type == 'Left':
-                # Volume Control (Pinch zoom gesture)
+                # Close current window (Close Palm = Fist Gesture)
                 thumb_tip = hand_landmarks.landmark[4]
-                index_finger_tip = hand_landmarks.landmark[8]
+                thumb_base = hand_landmarks.landmark[3]
 
-                # Calculate distance between thumb and index finger
-                distance = ((thumb_tip.x - index_finger_tip.x)**2 + (thumb_tip.y - index_finger_tip.y)**2)**0.5
+                is_fist = (
+                    hand_landmarks.landmark[8].y > hand_landmarks.landmark[6].y and  # Index finger curled
+                    hand_landmarks.landmark[12].y > hand_landmarks.landmark[10].y and  # Middle finger curled
+                    hand_landmarks.landmark[16].y > hand_landmarks.landmark[14].y and  # Ring finger curled
+                    hand_landmarks.landmark[20].y > hand_landmarks.landmark[18].y and  # Pinky finger curled
+                    abs(thumb_tip.x - thumb_base.x) < 0.03  # Thumb close to palm
+                )
 
-                # Adjust volume based on the distance
-                if distance > 0.05:  # Pinch Out (increase volume)
-                    pyautogui.press('volumeup')
-                elif distance < 0.03:  # Pinch In (decrease volume)
-                    pyautogui.press('volumedown')
-
-                # Close current window (Palm Close = Fist Gesture)
-                palm_center = hand_landmarks.landmark[0]
-                close_threshold = 0.05
-                if all(((palm_center.x - hand_landmarks.landmark[i].x)**2 +
-                        (palm_center.y - hand_landmarks.landmark[i].y)**2)**0.5 < close_threshold
-                       for i in [4, 8, 12, 16, 20]):
+                if is_fist:
                     pyautogui.hotkey('alt', 'f4')
+
+                # Open palm does nothing (no action required here)
 
                 # Open Chrome (Peace sign gesture)
                 if (hand_landmarks.landmark[8].y < hand_landmarks.landmark[6].y and  # Index finger extended
